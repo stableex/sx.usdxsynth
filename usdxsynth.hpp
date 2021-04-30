@@ -33,30 +33,35 @@ namespace usdxsynth {
      *
      * ### params
      *
-     * - `{asset} in` - X*** asset
+     * - `{asset} in` - in asset
+     * - `{symbol} sym_out` - out symbol
      *
      * ### returns
      *
-     * - `{asset}` - USDC asset
+     * - `{asset}` - asset
      *
      * ### example
      *
      * ```c++
      * const asset in = {1'00000000, symbol{"XEOS",8}};
+     * const symbol sym_out = {"USDC", 4}
      *
-     * const auto out = usdxsynth::get_amount_out( in );
+     * const auto out = usdxsynth::get_amount_out( in, sym_out );
      * // out => "5.3000 USDC"
      * ```
      */
-    static asset get_amount_out(const asset in )
+    static asset get_amount_out(const asset in, const symbol sym_out )
     {
-        check(in.symbol.precision() >= BASE_SYM.precision(), "usdxsynth: X token precision too small");
+        check(sym_out == BASE_SYM || in.symbol == BASE_SYM, "usdxsynth: only USDC can be used to mint");
+
         iprices iprices_tbl( code, code.value );
-        const auto token  = iprices_tbl.get(in.symbol.code().raw(), "usdxsynth: wrong X token");
+        const auto xsym = sym_out == BASE_SYM ? in.symbol : sym_out;
+        const auto token  = iprices_tbl.get(xsym.code().raw(), "usdxsynth: wrong X token");
 
-        const auto out_amount = in.amount * token.index_price * (10000 - get_fee()) / 10000;
+        double out_amount = sym_out == BASE_SYM ? in.amount * token.index_price : in.amount / token.index_price;
+        out_amount = out_amount * (10000 - get_fee()) / 10000;
 
-        return { static_cast<int64_t>(out_amount  / pow(10, in.symbol.precision() - BASE_SYM.precision())), BASE_SYM };
+        return { static_cast<int64_t>(out_amount  / pow(10, in.symbol.precision() - sym_out.precision())), sym_out };
     }
 
 
