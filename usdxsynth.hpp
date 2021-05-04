@@ -24,7 +24,7 @@ namespace usdxsynth {
     typedef eosio::multi_index< "iprices"_n, iprices_row > iprices;
 
     static uint64_t get_fee() {
-        return 10;
+        return 50;
     }
     /**
      * ## STATIC `get_amount_out`
