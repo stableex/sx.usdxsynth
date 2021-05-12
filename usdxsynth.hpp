@@ -23,8 +23,8 @@ namespace usdxsynth {
     };
     typedef eosio::multi_index< "iprices"_n, iprices_row > iprices;
 
-    static uint64_t get_fee() {
-        return 50;
+    static uint64_t get_fee(bool redeem) {
+        return redeem ? 50 : 30;
     }
     /**
      * ## STATIC `get_amount_out`
@@ -59,7 +59,7 @@ namespace usdxsynth {
         const auto token  = iprices_tbl.get(xsym.code().raw(), "usdxsynth: wrong X token");
 
         double out_amount = sym_out == BASE_SYM ? in.amount * token.index_price : in.amount / token.index_price;
-        out_amount = out_amount * (10000 - get_fee()) / 10000;
+        out_amount = out_amount * (10000 - get_fee(sym_out == BASE_SYM)) / 10000;
 
         return { static_cast<int64_t>(out_amount  / pow(10, in.symbol.precision() - sym_out.precision())), sym_out };
     }
